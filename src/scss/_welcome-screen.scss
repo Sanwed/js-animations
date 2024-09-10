@@ -1,0 +1,36 @@
+.welcome-screen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: -webkit-linear-gradient(180deg, #afadff, #2b6eb8);
+  background: linear-gradient(180deg, #aba9ff 30%, #d0cfff 90%, #ffffff 100%);
+  
+  h1 {
+    font-size: 10vw;
+    background: -webkit-linear-gradient(#e3e2ff 50%, #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  button {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    height: 7vh;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+    
+    img {
+      width: 5vw;
+    }
+  }
+}

@@ -1,0 +1,14 @@
+@use "fonts";
+
+body {
+  font-size: 24px;
+  line-height: 1.65;
+  overflow: hidden;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.screen {
+  width: 100vw;
+  height: 100vh;
+}
