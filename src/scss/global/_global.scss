@@ -1,5 +1,11 @@
 @use "fonts";
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-size: 24px;
   line-height: 1.65;
@@ -11,4 +17,13 @@ body {
 .screen {
   width: 100vw;
   height: 100vh;
+  position: absolute;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.blur {
+  filter: blur(10px);
 }

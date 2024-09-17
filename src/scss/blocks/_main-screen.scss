@@ -1,0 +1,69 @@
+.main-screen {
+  background: #ffffff;
+  padding: 50px;
+  
+  h1 {
+    color: #afadff;
+    margin: 0 0 25px;
+    width: max-content;
+  }
+}
+
+.animation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #ffffff;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10%;
+}
+
+.animation-item {
+  border-radius: 15px;
+  min-height: 30vh;
+  padding: 10px;
+  background: linear-gradient(#c9c8ff 50%, #e4e0ff);
+  width: 100%;
+  height: max-content;
+  position: relative;
+  
+  header {
+    position: relative;
+  }
+  
+  header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    border-radius: 3px;
+    height: 100%;
+    background: #ffffff;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  h2 {
+    margin: 0 0 0 15px;
+    font-weight: 400;
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1.2;
+  }
+  
+  span {
+    font-size: 16px;
+    display: block;
+    margin: 0 0 20px 15px;
+  }
+  
+}
