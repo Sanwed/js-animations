@@ -1,72 +1,65 @@
 import {gsap} from 'gsap';
-import Gallery from './gallery';
+import {createElement} from './utils';
 
 class AnimationContainer {
-  constructor(animationId) {
-    this.animationId = animationId;
+  constructor(body, animationClass) {
+    this.animationClass = animationClass;
+    
+    this.body = body;
+    this.modal = null;
+    this.content = null;
+    this.closeButton = null;
+    this.leftButtonPart = null;
+    this.rightButtonPart = null;
+    
+    this.onEscapePress = this.onEscapePress.bind(this);
+    
+    this.init();
   }
   
   init() {
-    const body = document.body;
-    
-    const modal = document.createElement('div');
-    modal.id = 'animation-modal';
-    modal.classList.add('modal');
-    
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('modal-content');
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.classList.add('close-button');
-    
-    const leftBtnPart = document.createElement('div');
-    leftBtnPart.classList.add('left');
-    const rightBtnPart = document.createElement('div');
-    rightBtnPart.classList.add('right');
-    
-    body.append(modal);
-    modal.append(modalContent);
-    modal.append(closeBtn);
-    closeBtn.append(leftBtnPart);
-    closeBtn.append(rightBtnPart);
-    
-    this.#showScreen(modal, modalContent, closeBtn, leftBtnPart, rightBtnPart);
+    this.createScreen();
+    this.showScreen();
   }
   
-  #showScreen(...elems) {
-    const [screen, content, btn, leftPart, rightPart] = elems;
+  createScreen() {
+    this.modal = createElement('div', {className: 'modal'});
+    this.content = createElement('div', {className: 'modal-content'});
+    this.closeButton = createElement('button', {className: 'close-button'});
+    this.leftButtonPart = createElement('div', {className: 'left'});
+    this.rightButtonPart = createElement('div', {className: 'right'});
+    
+    this.closeButton.append(this.leftButtonPart, this.rightButtonPart);
+    this.modal.append(this.content, this.closeButton);
+    this.body.append(this.modal);
+  }
+  
+  showScreen() {
     const tl = gsap.timeline({
+      defaults: {duration: 1, opacity: 0},
       onComplete: () => {
-        btn.style.cursor = 'pointer';
-        btn.addEventListener('click', () => {
-          this.#hideScreen(...elems);
-        });
+        this.closeButton.style.cursor = 'pointer';
+        this.closeButton.addEventListener('click', () => this.hideScreen());
+        document.addEventListener('keydown', this.onEscapePress);
       },
     });
-    tl.from(screen, {
-      opacity: 0, duration: 1,
-    });
-    tl.from(content, {
-      duration: 1, opacity: 0, scale: 0, borderRadius: 200,
-    }, '<0.5');
-    tl.from(leftPart, {
-      opacity: 0, duration: 1, ease: 'power2.out', x: -100, y: -100,
-    }, '<0.5');
-    tl.from(rightPart, {
-      opacity: 0, duration: 1, ease: 'power2.out', x: 100, y: -100,
-      onComplete: () => {
-        new Gallery(content).init();
-      },
-    }, '<');
+    tl.from(this.modal, {
+      onComplete: () => new this.animationClass(this.content).init(),
+    })
+      .from(this.content, {scale: 0, borderRadius: 200, opacity: 1})
+      .from(this.leftButtonPart, {ease: 'power2.out', x: -100, y: -100}, '<0.5')
+      .from(this.rightButtonPart, {ease: 'power2.out', x: 100, y: -100}, '<');
   }
   
-  #hideScreen(screen) {
+  onEscapePress(evt) {
+    return evt.key === 'Escape' && this.hideScreen();
+  }
+  
+  hideScreen() {
     const tl = gsap.timeline();
-    tl.to(screen, {
-      opacity: 0, duration: 1, onComplete: () => {
-        screen.remove();
-      },
-    });
+    tl.to(this.content, {scale: 0, duration: 0.5})
+      .to(this.modal, {opacity: 0, duration: 0.5, onComplete: () => this.modal.remove()}, '<');
+    document.removeEventListener('keydown', this.onEscapePress);
   }
 }
 

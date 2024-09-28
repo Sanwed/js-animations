@@ -1,116 +1,105 @@
 import {gsap} from 'gsap';
 import AnimationContainer from './animation-container';
-import Gallery from './gallery';
+import {createElement, getDeviceType} from './utils';
+import animations from './animations';
 
 class MainScreen {
-  constructor(animationsLink) {
-    this.animationsLink = animationsLink || ['Animation 1', 'Animation 2', 'Animation 3', 'Animation 4'];
+  constructor(body) {
+    this.body = body;
+    this.container = null;
+    this.title = null;
+    this.list = null;
+    this.items = null;
+    
+    this.animations = animations;
+    
+    this.setupItemInteractions = this.setupItemInteractions.bind(this);
+    
+    this.init();
   }
   
   init() {
-    const body = document.body;
-    
-    const screenParent = document.createElement('div');
-    screenParent.classList = 'screen main-screen';
-    screenParent.id = 'main-screen';
-    
-    const title = document.createElement('h1');
-    title.textContent = 'Animations';
-    title.id = 'main-title';
-    
-    const list = document.createElement('ul');
-    list.classList.add('animation-list');
-    
-    this.animationsLink.forEach((animation) => {
-      const item = document.createElement('li');
-      item.classList.add('animation-item');
-      item.id = 'animation-item-' + animation;
-      
-      const header = document.createElement('header');
-      
-      const title = document.createElement('h2');
-      title.textContent = animation.toString();
-      
-      const subtitle = document.createElement('span');
-      subtitle.textContent = 'gsap';
-      
-      const overlay = document.createElement('div');
-      overlay.classList.add('overlay');
-      
-      list.append(item);
-      item.append(header);
-      header.append(title);
-      header.append(subtitle);
-      item.append(overlay);
+    this.createScreen();
+    this.showScreen();
+  }
+  
+  createScreen() {
+    this.container = createElement('div', {className: 'screen main-screen'});
+    this.title = createElement('h1', {textContent: 'Animations'});
+    this.list = createElement('ul', {className: 'animation-list'});
+    this.animations.forEach(animation => {
+      this.list.append(this.createAnimationItem(animation));
     });
+    this.items = this.list.children;
     
-    body.append(screenParent);
-    screenParent.append(title);
-    screenParent.append(list);
-    
-    const items = list.querySelectorAll('li');
-    this.#showScreen(screenParent, title, items);
-    
+    this.container.append(this.title, this.list);
+    this.body.append(this.container);
   }
   
-  #showScreen(...elems) {
-    const [screen, title, items] = elems;
-    const tl = gsap.timeline({});
-    tl.fromTo(screen,
-      {opacity: 0, duration: 2, ease: 'power2.out', y: screen.offsetHeight},
-      {opacity: 1, y: 0, duration: 2});
-    tl.from(title, {
-      opacity: 0,
-      x: -title.offsetWidth,
-    }, '<1');
-    tl.from(items, {
-      opacity: 0,
-      x: -items[0].offsetWidth,
-      stagger: 0.1,
-      onComplete: () => {
-        items.forEach(card => {
-          card.style.cursor = 'pointer';
-          const header = card.querySelector('header');
-          gsap.set([card, header], {
-            transformPerspective: 900,
-            transformOrigin: 'center center',
-          });
-          card.addEventListener('mousemove', (evt) => {
-            this.#tiltElem(evt, card);
-            this.#tiltElem(evt, header, 10);
-          });
-          card.addEventListener('mouseleave', () => {
-            this.#resetTiltAnimation(card, header);
-          });
-          card.addEventListener('click', (_, i) => {
-            new AnimationContainer(i).init();
-          });
+  createAnimationItem(animation) {
+    const item = createElement('li', {className: 'animation-item'});
+    const header = createElement('header');
+    const title = createElement('h2', {textContent: animation.name});
+    const subtitle = createElement('span', {textContent: animation.subtitle});
+    const overlay = createElement('div', {className: 'overlay'});
+    
+    header.append(title, subtitle);
+    item.append(header, overlay);
+    return item;
+  }
+  
+  showScreen() {
+    const tl = gsap.timeline();
+    tl.fromTo(this.container, {opacity: 0, y: this.container.offsetHeight}, {opacity: 1, y: 0, duration: 2})
+      .from(this.title, {opacity: 0, x: -this.title.offsetWidth}, '<1')
+      .from(this.items, {
+        opacity: 0, x: -this.items[0].offsetWidth, stagger: 0.1, onComplete: this.setupItemInteractions,
+      }, '<');
+  }
+  
+  setupItemInteractions() {
+    Array.from(this.items).forEach((card, i) => {
+      card.style.cursor = 'pointer';
+      const header = card.querySelector('header');
+      gsap.set([card, header], {transformPerspective: 900, transformOrigin: 'center center'});
+      
+      if (!card.dataset.eventAdded) {
+        card.addEventListener('mousemove', evt => {
+          if (getDeviceType() === 'desktop') {
+            this.tiltElem(evt, card);
+            this.tiltElem(evt, header, 10);
+          }
         });
-      },
-    }, '<');
+        
+        card.addEventListener('mouseleave', () => {
+          if (getDeviceType() === 'desktop') {
+            this.resetTiltAnimation(card, header);
+          }
+        });
+        
+        card.addEventListener('click', () => new AnimationContainer(document.body, animations[i].animation));
+      }
+      
+      card.dataset.eventAdded = 'true';
+    });
   }
   
-  #tiltElem(evt, elem, spread = 0) {
-    let xPos = (evt.clientX / window.innerWidth - 0.5);
-    let yPos = (evt.clientY / window.innerHeight - 0.5);
+  tiltElem(evt, elem, spread = 0) {
+    const xPos = (evt.clientX / window.innerWidth - 0.5);
+    const yPos = (evt.clientY / window.innerHeight - 0.5);
     gsap.to(elem, {
-      duration: 0.1,
+      duration: 0.3,
       rotationY: 10 * xPos,
-      rotationX: 10 * yPos,
-      x: spread * xPos,
-      y: spread * yPos,
+      rotationX: -10 * yPos,
+      x: spread * xPos * 8,
+      y: spread * yPos * 8,
+      ease: 'power2.out',
       overwrite: true,
     });
   }
   
-  #resetTiltAnimation(...elems) {
-    gsap.to(elems, {
-      duration: 0.2,
-      rotationY: 0,
-      rotationX: 0,
-      x: 0,
-      y: 0,
-    });
+  resetTiltAnimation(...elems) {
+    gsap.to(elems, {duration: 0.4, rotationY: 0, rotationX: 0, x: 0, y: 0});
   }
 }
 

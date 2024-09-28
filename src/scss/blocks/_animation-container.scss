@@ -51,4 +51,9 @@
   border-radius: 30px;
   transform-style: preserve-3d;
   perspective: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }

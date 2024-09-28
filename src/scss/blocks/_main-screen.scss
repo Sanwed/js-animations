@@ -14,22 +14,25 @@
   padding: 0;
   margin: 0;
   color: #ffffff;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10%;
 }
 
 .animation-item {
   border-radius: 15px;
-  min-height: 30vh;
+  min-height: 35vh;
   padding: 10px;
   background: linear-gradient(#c9c8ff 50%, #e4e0ff);
   width: 100%;
   height: max-content;
   position: relative;
+  margin-bottom: 5em;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
   
   header {
     position: relative;
+    color: #9893ff;
   }
   
   header::before {
@@ -40,7 +43,7 @@
     width: 3px;
     border-radius: 3px;
     height: 100%;
-    background: #ffffff;
+    background: #9893ff;
   }
   
   .overlay {

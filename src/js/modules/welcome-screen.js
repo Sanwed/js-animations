@@ -1,71 +1,64 @@
 import {gsap} from 'gsap';
 import MainScreen from './main-screen';
-import arrowSrc from '../../assets/images/arrow.svg';
+import {createElement} from './utils';
 
 class WelcomeScreen {
+  constructor(body) {
+    this.body = body;
+    this.container = null;
+    this.title = null;
+    this.arrow = null;
+    
+    this.onScreenAppear = this.onScreenAppear.bind(this);
+    
+    this.init();
+  }
+  
   init() {
-    const body = document.body;
-    
-    const screenParent = this.#createElement('div', {classname: 'screen welcome-screen', id: 'welcome-screen'});
-    const title = this.#createElement('h1', {textContent: 'Welcome', id: 'welcome-title'});
-    const arrow = this.#createElement('button', {id: 'welcome-arrow'});
-    
-    const arrowSvg = document.createElement('img');
-    arrowSvg.src = `${arrowSrc}`;
-    
-    body.append(screenParent);
-    screenParent.append(title, arrow);
-    arrow.append(arrowSvg);
-    
-    this.#showScreen(screenParent, title, arrow);
+    this.createScreen();
+    this.showScreen();
   }
   
-  #createElement(tag, {classname, id, textContent} = {}) {
-    const elem = document.createElement(tag);
-    if (classname) elem.className = classname;
-    if (id) elem.id = id;
-    if (textContent) elem.textContent = textContent;
-    return elem;
+  createScreen() {
+    this.container = createElement('div', {className: 'screen welcome-screen', id: 'welcome-screen'});
+    
+    this.title = createElement('h1', {textContent: 'Welcome', id: 'welcome-title'});
+    
+    this.arrow = createElement('button', {href: '#welcome-arrow'});
+    const arrowSvg = createElement('img', {src: './assets/images/arrow.svg', alt: 'arrow'});
+    
+    this.arrow.append(arrowSvg);
+    this.body.append(this.container);
+    this.container.append(this.title, this.arrow);
   }
   
-  #showScreen(screen, title, arrow) {
+  showScreen() {
+    const tl = gsap.timeline({defaults: {duration: 2, opacity: 0}, onComplete: this.onScreenAppear});
+    tl.from(this.container, {y: -this.container.offsetHeight, ease: 'power2.out'})
+      .from(this.title, {y: -this.title.offsetHeight}, '<')
+      .from(this.arrow, {duration: 1, y: -this.arrow.offsetHeight}, '<1');
+  }
+  
+  onScreenAppear() {
+    this.arrow.style.cursor = 'pointer';
+    gsap.timeline({repeat: -1, yoyo: true}).to(this.arrow, {duration: 1, y: this.arrow.offsetHeight / 5});
+    this.clickArrow();
+  }
+  
+  clickArrow() {
     const tl = gsap.timeline({
-      defaults: {duration: 2, opacity: 0},
+      paused: true, onComplete: () => this.container.remove(),
     });
-    tl.from(screen, {y: -screen.offsetHeight, ease: 'power2.out'})
-      .from(title, {y: -title.offsetHeight}, '<')
-      .from(arrow, {
-        duration: 1, y: -arrow.offsetHeight, onComplete: () => {
-          arrow.style.cursor = 'pointer';
-          const slideTl = this.#slideArrow(arrow);
-          this.#clickArrow(slideTl, screen, title, arrow);
-        },
-      }, '<1');
-  }
-  
-  #slideArrow(arrow) {
-    const tl = gsap.timeline({repeat: -1, repeatDelay: 0, yoyo: true});
-    tl.to(arrow, {duration: 1, y: arrow.offsetHeight / 5});
-    return tl;
-  }
-  
-  #clickArrow(tlToKill, screen, title, arrow) {
-    const tl = gsap.timeline({
-      paused: true, onComplete: () => {
-        screen.remove();
-      },
-    });
-    tl.to(screen, {
-      duration: 2, y: -screen.offsetHeight, ease: 'power2.out',
-    })
-      .to(title, {duration: 1, y: -screen.offsetHeight / 4}, '<')
-      .to(arrow, {duration: 1, y: -40, opacity: 0}, '<');
-    arrow.addEventListener('click', () => {
-      tlToKill.kill(arrow);
+    tl.to(this.container, {duration: 2, y: -this.container.offsetHeight, ease: 'power2.out'})
+      .to(this.title, {duration: 1, y: -this.container.offsetHeight / 4}, '<')
+      .to(this.arrow, {duration: 1, y: -40, opacity: 0}, '<');
+    
+    this.arrow.addEventListener('click', () => {
       tl.play();
-      new MainScreen().init();
-    });
+      new MainScreen(document.body);
+    }, {once: true});
   }
+  
 }
 
 export default WelcomeScreen;
